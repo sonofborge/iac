@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+##
+# This CloudFormation template deploys a basic VPC / Network.
+Resources:
+  ##
+  # Baby's first Virtual Private Cloud <3
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.1.0.0/16 # Link: https://treyperry.com/2015/06/22/ipv4-cidr-vpc-in-a-nutshell/
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default # instances launched into the VPC runs on shared hardware by default, unless specified during instance launch.
+      Tags:
+        - Key: Name
+          Value: !Join [ '', [ !Ref "AWS::StackName", "-vpc" ] ]
