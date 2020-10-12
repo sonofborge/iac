@@ -5,12 +5,18 @@ mostly.
 
 ## Requirements
 
-*   An AWS Account
-*   AWS CLi
+*   [An AWS Account](https://aws.amazon.com/account/)
+*   [AWS CLi](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html)
 
 These instructions assume that you have created an AWS account and
 [configured aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)
 with that account.
+
+## Cost
+
+Note that NAT Gateways (and other potential future services to be added here) are not free.
+Please run this with that understanding,
+and create AWS budgets and alerting appropriate to your needs.
 
 ## How to Deploy
 
@@ -60,3 +66,7 @@ do the following:
     ```sh
     aws cloudformation delete-stack --stack-name <MyStackName>
     ```
+
+## Resources
+
+*   [Building a VPC with CloudFormation - Part 1](https://www.infoq.com/articles/aws-vpc-cloudformation/)
