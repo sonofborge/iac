@@ -1,29 +1,40 @@
 AWSTemplateFormatVersion: 2010-09-09
 
-##
-# This CloudFormation template deploys a basic VPC / Network.
+Description: Personal VPC Network Template
+
+Parameters:
+  Name:
+    Type: String
+    Description: A prefix unique to this VPC that helps to qualify its purpose or owner.
+    AllowedPattern: ^[a-zA-A -]+$
+  CidrBlock:
+    Type: String
+    Description: CIDR address range for the entire VPC.
+    AllowedPattern: ((\d{1,3})\.){3}\d{1,3}/\d{1,2}
+    Default: 10.1.0.0/16
+
 Resources:
   ##
-  # Baby's first Virtual Private Cloud <3
+  # Virtual Private Cloud
+  #
   VPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: 10.1.0.0/16 # Link: https://treyperry.com/2015/06/22/ipv4-cidr-vpc-in-a-nutshell/
+      CidrBlock: !Ref CidrBlock
       EnableDnsSupport: true
       EnableDnsHostnames: true
-      InstanceTenancy: default # instances launched into the VPC runs on shared hardware by default, unless specified during instance launch.
+      InstanceTenancy: default
       Tags:
         - Key: Name
-          Value: !Join [ '', [ !Ref "AWS::StackName", "-vpc" ] ]
+          Value: !Ref Name
 
   ##
-  # VPC's gotta talk to the interwebs
+  # Internet Gateway
+  #
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     DependsOn: VPC
-  ##
-  # This is the actual hook between the VPC and the InternetGateway.
-  AttachGateway:
+  InternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       VpcId: !Ref VPC
@@ -31,11 +42,14 @@ Resources:
 
   ##
   # Subnets
+  #
+
+  # Public
   PublicSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: 10.1.10.0/24
+      CidrBlock: 10.1.10.0/24 # TODO: !Ref CiderBlockA
       AvailabilityZone: !Select [ 0, !GetAZs ] # Get the first availability zone in the list
       Tags:
         - Key: Name
@@ -49,6 +63,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-Public-B
+
+  # Private
   PrivateSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
@@ -82,8 +98,8 @@ Resources:
     Type: AWS::EC2::Route
     # An error will occur if we attempt to build a route table entry to an unattached gateway.  To eliminate this error,
     # we let CloudFormation know about this dependency.  During stack creation it will not attempt to build this route
-    # table entry until after the AttachGateway resource is created.
-    DependsOn: AttachGateway
+    # table entry until after the InternetGatewayAttachment resource is created.
+    DependsOn: InternetGatewayAttachment
     Properties:
       RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0

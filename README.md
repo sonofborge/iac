@@ -69,4 +69,5 @@ do the following:
 
 ## Resources
 
+*   [AWS CloudFormation User Guide - Learn template basics](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/gettingstarted.templatebasics.html)
 *   [Building a VPC with CloudFormation - Part 1](https://www.infoq.com/articles/aws-vpc-cloudformation/)
