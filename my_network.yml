@@ -6,7 +6,7 @@ Parameters:
   Name:
     Type: String
     Description: A prefix unique to this VPC that helps to qualify its purpose or owner.
-    AllowedPattern: ^[a-zA-A -]+$
+    AllowedPattern: ^[a-zA-Z -]+$
   CidrBlock:
     Type: String
     Description: CIDR address range for the entire VPC.
@@ -50,7 +50,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.1.10.0/24 # TODO: !Ref CiderBlockA
-      AvailabilityZone: !Select [ 0, !GetAZs ] # Get the first availability zone in the list
+      AvailabilityZone: !Select [ 0, Fn::GetAZs ] # Get the first availability zone in the list
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-Public-A
@@ -59,7 +59,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.1.20.0/24
-      AvailabilityZone: !Select [ 1, !GetAZs ] # "B" Availability Zone
+      AvailabilityZone: !Select [ 1, Fn::GetAZs ] # "B" Availability Zone
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-Public-B
@@ -70,7 +70,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.1.50.0/24
-      AvailabilityZone: !Select [ 0, !GetAZs ] # "A" Availability Zone
+      AvailabilityZone: !Select [ 0, Fn::GetAZs ] # "A" Availability Zone
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-Private-A
@@ -79,7 +79,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.1.60.0/24
-      AvailabilityZone: !Select [ 1, !GetAZs ] # "B" Availability Zone
+      AvailabilityZone: !Select [ 1, Fn::GetAZs ] # "B" Availability Zone
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-Private-B
