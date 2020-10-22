@@ -1,6 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 
-Description: Personal VPC Network Template
+Description:
+  Creates a VPC and its low-level networking components including subnets, gateways, and routes.
 
 Parameters:
   Name:
@@ -34,6 +35,10 @@ Resources:
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     DependsOn: VPC
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${Name} Internet Gateway
   InternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -43,50 +48,31 @@ Resources:
   ##
   # Subnets
   #
-
   # Public
   PublicSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.1.10.0/24 # TODO: !Ref CiderBlockA
-      AvailabilityZone: !Select [ 0, Fn::GetAZs ] # Get the first availability zone in the list
+      AvailabilityZone: !Select [ 0, Fn::GetAZs ]
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-Public-A
-  PublicSubnetB:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref VPC
-      CidrBlock: 10.1.20.0/24
-      AvailabilityZone: !Select [ 1, Fn::GetAZs ] # "B" Availability Zone
-      Tags:
-        - Key: Name
-          Value: !Sub ${AWS::StackName}-Public-B
-
   # Private
   PrivateSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.1.50.0/24
-      AvailabilityZone: !Select [ 0, Fn::GetAZs ] # "A" Availability Zone
+      AvailabilityZone: !Select [ 0, Fn::GetAZs ]
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-Private-A
-  PrivateSubnetB:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref VPC
-      CidrBlock: 10.1.60.0/24
-      AvailabilityZone: !Select [ 1, Fn::GetAZs ] # "B" Availability Zone
-      Tags:
-        - Key: Name
-          Value: !Sub ${AWS::StackName}-Private-B
 
   ##
-  # Routing Tables for our wonderful little subnets
-  # Reference: https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html#SubnetRouting
+  # Routing Tables
+  #
+  # Public
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -96,14 +82,15 @@ Resources:
           Value: Public
   PublicRoute1: # public route table has direct routing to internet gateway
     Type: AWS::EC2::Route
-    # An error will occur if we attempt to build a route table entry to an unattached gateway.  To eliminate this error,
-    # we let CloudFormation know about this dependency.  During stack creation it will not attempt to build this route
-    # table entry until after the InternetGatewayAttachment resource is created.
+    # An error will occur if we attempt to build a route table entry to an unattached gateway. To eliminate this error,
+    # we let CloudFormation know about this dependency and it will not attempt to build this route table entry until
+    # after the InternetGatewayAttachment resource is created.
     DependsOn: InternetGatewayAttachment
     Properties:
       RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
+  # Private
   PrivateRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -150,18 +137,9 @@ Resources:
     Properties:
       SubnetId: !Ref PublicSubnetA
       RouteTableId: !Ref PublicRouteTable
-  PublicSubnetBRouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PublicSubnetB
-      RouteTableId: !Ref PublicRouteTable
+
   PrivateSubnetARouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref PrivateSubnetA
-      RouteTableId: !Ref PrivateRouteTable
-  PrivateSubnetBRouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PrivateSubnetB
       RouteTableId: !Ref PrivateRouteTable
