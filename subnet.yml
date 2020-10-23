@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description:
+  Defines resources required for a functional public or private subnet.
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: Resource ID for the VPC.
+  VpcName:
+    Type: String
+    Description: Name of the VPC.
+  RouteTableId:
+    Type: String
+    Description: Resource ID of the route table to use for subnet associations.
+  SubnetType:
+    Type: String
+    Description: The type of subnet to create (which will determine security and access patterns).
+    AllowedValues:
+      - Private
+      - Public
+  CidrBlockA:
+    Type: String
+    Description: CidrBlock range for SubnetA.
+    AllowedPattern: ((\d{1,3})\.){3}\d{1,3}/\d{1,2}
+  CidrBlockB:
+    Type: String
+    Description: CidrBlock range for SubnetB.
+    AllowedPattern: ((\d{1,3})\.){3}\d{1,3}/\d{1,2}
+  CidrBlockC:
+    Type: String
+    Description: CidrBlock range for SubnetC.
+    AllowedPattern: ((\d{1,3})\.){3}\d{1,3}/\d{1,2}
+
+Conditions:
+  IsPublicSubnet: !Equals [ !Ref SubnetType, public ]
+
+Resources:
+  ##
+  # Subnets and Associations
+  #
+  SubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: !Ref CidrBlockA
+      AvailabilityZone: !Select [ 0, Fn::GetAZs ]
+      MapPublicIpOnLaunch: !If [ IsPublicSubnet, true, false ]
+      Tags:
+        - Key: Name
+          Value: !Sub ${VpcName} SubnetA ${SubnetType}
+  RouteTableAssociationA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetA
+      RouteTableId: !Ref RouteTableId
+  SubnetB:
+    Type: AWS::EC2::Subnet
+      Properties:
+        VpcId: !Ref VpcId
+        CidrBlock: !Ref CidrBlockB
+        AvailabilityZone: !Select [ 0, Fn::GetAZs ]
+        MapPublicIpOnLaunch: !If [ IsPublicSubnet, true, false ]
+        Tags:
+          - Key: Name
+            Value: !Sub ${VpcName} SubnetB ${SubnetType}
+    RouteTableAssociationB:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref SubnetB
+        RouteTableId: !Ref RouteTableId
+  SubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: !Ref CidrBlockA
+      AvailabilityZone: !Select [ 0, Fn::GetAZs ]
+      MapPublicIpOnLaunch: !If [ IsPublicSubnet, true, false ]
+      Tags:
+        - Key: Name
+          Value: !Sub ${VpcName} SubnetC ${SubnetType}
+  RouteTableAssociationC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetC
+      RouteTableId: !Ref RouteTableId
+
+Outputs:
+  SubnetIdA:
+    Description: Resource ID for SubnetA.
+    Value: !Ref SubnetA
+  SubnetIdB:
+    Description: Resource ID for SubnetB.
+    Value: !Ref SubnetB
+  SubnetIdC:
+    Description: Resource ID for SubnetC.
+    Value: !Ref SubnetB

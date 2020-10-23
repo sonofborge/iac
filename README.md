@@ -26,7 +26,10 @@ do the following:
 1.  Create the stack
 
     ```sh
-    aws cloudformation create-stack --stack-name <MyStackName> --template-body file://<path/to/my/template.yml>
+    aws cloudformation create-stack \
+        --stack-name <MyStackName> \
+        --template-body file://stacks/my-vpc.yml \
+        --parameters file://params/my-vpc.json
     ```
 
     Note that aws cli requires the `--template-body` argument to be a

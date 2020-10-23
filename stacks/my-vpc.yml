@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description:
+  Creates a VPC and its low-level networking components including default rules and gateways.
+
+Parameters:
+  Name:
+    Type: String
+    Description: A prefix unique to this VPC that helps to qualify its purpose or owner.
+    AllowedPattern: ^[a-zA-Z -]+$
+  CidrBlock:
+    Type: String
+    Description: CIDR address range for the entire VPC.
+    AllowedPattern: ((\d{1,3})\.){3}\d{1,3}/\d{1,2}
+
+Resources:
+  ##
+  # Virtual Private Cloud
+  #
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref CidrBlock
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Ref Name
+
+  ##
+  # Internet Gateway
+  #
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    DependsOn: VPC
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${Name} Internet Gateway
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+Outputs:
+  VpcId:
+    Description: Resource ID for the VPC.
+    Value: !Ref VPC
+  VpcCidrBlock:
+    Description: CIDR address range for the VPC.
+    Value: !GetAtt VPC.CidrBlock
+  InternetGatewayId:
+    Description: Resource ID for the VPC's Internet Gateway.
+    Value: !Ref InternetGateway
